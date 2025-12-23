@@ -16,6 +16,6 @@ public class ControllerExceptionHandler {
     public ResponseEntity<Object> userExistExc() {
         return new ResponseEntity<>(Map.
                 of("error", "User already exist"),
-                HttpStatus.FORBIDDEN);
+                HttpStatus.CONFLICT);
     }
 }

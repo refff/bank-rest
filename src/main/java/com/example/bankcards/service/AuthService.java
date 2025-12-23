@@ -1,5 +1,6 @@
 package com.example.bankcards.service;
 
+import com.example.bankcards.dto.JwtAuthResponse;
 import com.example.bankcards.dto.UserDTO;
 import com.example.bankcards.entity.Role;
 import com.example.bankcards.entity.User;
@@ -54,6 +55,6 @@ public class AuthService {
 
         var jwt = jwtService.generateToken(user);
 
-        return new ResponseEntity<>(jwt, HttpStatus.OK);
+        return new ResponseEntity<>(Map.of("token", jwt), HttpStatus.OK);
     }
 }
