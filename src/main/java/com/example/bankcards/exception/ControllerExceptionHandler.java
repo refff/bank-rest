@@ -13,7 +13,7 @@ import java.util.Map;
 public class ControllerExceptionHandler {
 
     @ExceptionHandler(UserExistException.class)
-    public ResponseEntity<Object> userExistExc(MethodArgumentNotValidException e, WebRequest request) {
+    public ResponseEntity<Object> userExistExc() {
         return new ResponseEntity<>(Map.
                 of("error", "User already exist"),
                 HttpStatus.FORBIDDEN);

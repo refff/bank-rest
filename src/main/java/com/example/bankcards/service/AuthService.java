@@ -6,36 +6,42 @@ import com.example.bankcards.entity.User;
 import com.example.bankcards.repository.RoleRepository;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.exception.UserExistException;
+import com.example.bankcards.security.JwtService;
+import com.example.bankcards.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.util.Map;
+
 @Component
 public class AuthService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
     public AuthService(UserRepository userRepository,
                        PasswordEncoder passwordEncoder,
-                       RoleRepository roleRepository) {
+                       RoleRepository roleRepository,
+                       JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
+        this.jwtService = jwtService;
     }
 
     public ResponseEntity<?> signUp(UserDTO request){
-        try {
-            userRepository
-                    .findByUsername(request.getUsername())
-                    .ifPresent(user -> {
-                        throw new UserExistException();
-                    });
-        } catch (Exception e) {}
+
+        userRepository
+                .findByUsername(request.getUsername())
+                .ifPresent(user -> {
+                    throw new UserExistException();
+                });
 
         Role grantedRole = roleRepository.findById(1).get();
 
@@ -46,6 +52,8 @@ public class AuthService {
 
         userRepository.save(user);
 
-        return new ResponseEntity<>("UserCreated!", HttpStatus.OK);
+        var jwt = jwtService.generateToken(user);
+
+        return new ResponseEntity<>(jwt, HttpStatus.OK);
     }
 }

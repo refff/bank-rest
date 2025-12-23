@@ -2,6 +2,7 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.UserDTO;
 import com.example.bankcards.service.AuthService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,7 @@ public class Controller {
     }
 
     @GetMapping(value = "/api/hello")
+    @Operation(summary = "Доступен всем пользователям")
     public String sayHello() {
         return "hello";
     }
@@ -31,6 +33,7 @@ public class Controller {
     }
 
     @GetMapping(value = "/api/hellos")
+    @Operation(summary = "Доступен только авторизованным пользователям")
     public String secretHello() {
         return "hello";
     }

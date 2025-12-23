@@ -6,21 +6,22 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MyUserPrincipal implements UserDetails {
+public class UserDetailsImpl implements UserDetails {
 
     private final int id;
     private final String username;
     private final String passwordHash;
     private final List<? extends GrantedAuthority> authorities;
 
-    public MyUserPrincipal(User user) {
+    public UserDetailsImpl(User user) {
         this.id = user.getId();
-        this.username = getUsername();
+        this.username = user.getUsername();
         this.passwordHash = user.getPassword();
         this.authorities = user
                 .getRoles().stream()

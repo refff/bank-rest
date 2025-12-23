@@ -1,6 +1,8 @@
 package com.example.bankcards.entity;
 
 import jakarta.persistence.*;
+import org.jspecify.annotations.Nullable;
+import org.springframework.security.core.GrantedAuthority;
 
 @Entity
 @Table(name = "roles")
