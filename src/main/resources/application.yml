@@ -40,3 +40,7 @@ logging:
     root: info
   pattern:
     console: "%d{HH:mm} %-5level %logger{36} - %msg%n"
+
+jwt:
+  secret:
+    key: 75a81eedb96be7d57d333aa5aa715ca3c917c8c7711a44201d1e1a3690f399dcee8b2eba

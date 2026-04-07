@@ -12,8 +12,10 @@ import com.example.bankcards.security.UserDetailsImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 
@@ -36,6 +38,7 @@ public class AuthService {
         this.jwtService = jwtService;
     }
 
+    @Transactional
     public ResponseEntity<?> signUp(UserDTO request){
 
         userRepository
@@ -53,8 +56,15 @@ public class AuthService {
 
         userRepository.save(user);
 
+        return new ResponseEntity<>(Map.of("status", "User created!"), HttpStatus.OK);
+    }
+
+    public ResponseEntity<?> getToken() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findByUsername(username).get();
         var jwt = jwtService.generateToken(user);
 
-        return new ResponseEntity<>(Map.of("token", jwt), HttpStatus.OK);
+        return new ResponseEntity<>(new JwtAuthResponse(jwt), HttpStatus.OK);
     }
 }

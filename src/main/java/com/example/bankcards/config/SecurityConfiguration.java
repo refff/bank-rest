@@ -50,7 +50,10 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/auth/hello").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/hellos").hasAuthority("ROLE_USER")
-                        .requestMatchers("/*").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/auth/token").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/admin/getAdmin").hasAuthority("ROLE_USER")
+                        .requestMatchers(HttpMethod.GET, "/admin/helloAdmin").hasAuthority("ROLE_ADMIN")
+                        //.requestMatchers("/*").permitAll()
 
                 )
                 .authenticationProvider(authenticationProvider())
