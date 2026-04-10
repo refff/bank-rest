@@ -25,6 +25,8 @@ public class Card {
     @JsonBackReference
     private User owner;
 
+    private Double balance;
+
     public Card() {
     }
 
@@ -78,6 +80,15 @@ public class Card {
 
     public Card setOwner(User owner) {
         this.owner = owner;
+        return this;
+    }
+
+    public Double getBalance() {
+        return balance;
+    }
+
+    public Card setBalance(Double balance) {
+        this.balance = balance;
         return this;
     }
 }

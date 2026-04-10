@@ -53,6 +53,8 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/auth/token").authenticated()
                         .requestMatchers(HttpMethod.GET, "/admin/getAdmin").hasAuthority("ROLE_USER")
                         .requestMatchers(HttpMethod.GET, "/admin/helloAdmin").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/admin/allCards").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/admin/createCard").hasAuthority("ROLE_ADMIN")
                         //.requestMatchers("/*").permitAll()
 
                 )
