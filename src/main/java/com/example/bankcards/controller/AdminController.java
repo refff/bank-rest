@@ -1,12 +1,15 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.CardDTO;
+import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/admin")
@@ -52,9 +55,18 @@ public class AdminController {
             tags = "Card"
     )
     public ResponseEntity<?> createNewCard(@RequestBody CardDTO cardDTO) {
-        adminService.createCard(cardDTO);
-        return ResponseEntity.ok().build();
+        return adminService.createCard(cardDTO);
+    }
+
+    @PostMapping(value = "/cardRequest")
+    @Operation(
+            description = "Блокирование карты",
+            tags = "Card"
+    )
+    public ResponseEntity<?> cardAction(@RequestBody CardRequest request) {
+        return adminService.processCardAction(request.number, request.action);
     }
 
 
+    record CardRequest(String number, CardStatus action){}
 }

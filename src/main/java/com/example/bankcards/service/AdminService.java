@@ -17,11 +17,13 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Transactional
 public class AdminService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final CardRepository cardRepository;
+    private final String cardTemplate = "**** **** **** ";
 
     @Autowired
     public AdminService(UserRepository userRepository,
@@ -55,12 +57,12 @@ public class AdminService {
     }
 
     @Transactional
-    public void createCard(CardDTO cardDTO) {
+    public ResponseEntity<?> createCard(CardDTO cardDTO) {
         User owner = userRepository.findByUsername(cardDTO.getOwner())
                 .orElseThrow(() -> new RuntimeException("No such user"));
 
         String experationDate = LocalDate.now().plusYears(5).toString();
-        String cardNumber = "**** **** **** " + (int)((Math.random()*9000) + 1000);
+        String cardNumber = cardTemplate + (int)((Math.random()*9000) + 1000);
 
         Card card = new Card()
                 .setCardNumber(cardNumber)
@@ -70,5 +72,27 @@ public class AdminService {
                 .setBalance(0.0);
 
         cardRepository.save(card);
+
+        return new ResponseEntity<>(Map.of(
+                "status", "Card created",
+                "number", cardNumber), HttpStatus.CREATED);
     }
+
+    @Transactional
+    public ResponseEntity<?> processCardAction(String number, CardStatus status) {
+        Card card = cardRepository.findByCardNumber(cardTemplate + number).get();
+
+        switch (status) {
+            case ACTIVE -> card.setStatus(CardStatus.ACTIVE);
+            case LOCKED -> card.setStatus(CardStatus.LOCKED);
+            case EXPIRED -> card.setStatus(CardStatus.EXPIRED);
+        }
+
+        cardRepository.save(card);
+
+        return new ResponseEntity<>(Map.of(
+                "status", "Card is " + status,
+                "card", cardTemplate + number), HttpStatus.OK);
+    }
+
 }

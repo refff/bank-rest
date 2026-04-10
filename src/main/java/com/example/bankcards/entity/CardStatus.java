@@ -1,5 +1,10 @@
 package com.example.bankcards.entity;
 
 public enum CardStatus {
-    ACTIVE, LOCKED, EXPIRED
+    ACTIVE("Active"),
+    LOCKED("Locked"),
+    EXPIRED("Expired");
+
+    CardStatus(String name) {
+    }
 }
