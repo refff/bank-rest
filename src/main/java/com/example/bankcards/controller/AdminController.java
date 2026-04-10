@@ -58,9 +58,9 @@ public class AdminController {
         return adminService.createCard(cardDTO);
     }
 
-    @PostMapping(value = "/cardRequest")
+    @PostMapping(value = "/cardStatusRequest")
     @Operation(
-            description = "Блокирование карты",
+            description = "Выполнение действий с картами(активация, блокировка)",
             tags = "Card"
     )
     public ResponseEntity<?> cardAction(@RequestBody CardRequest request) {
