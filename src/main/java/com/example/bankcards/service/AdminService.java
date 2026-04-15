@@ -79,19 +79,29 @@ public class AdminService {
     }
 
     @Transactional
-    public ResponseEntity<?> processCardAction(String number, CardStatus status) {
+    public ResponseEntity<?> processCardAction(String number, String status) {
         Card card = cardRepository.findByCardNumber(cardTemplate + number).get();
 
         switch (status) {
-            case ACTIVE -> card.setStatus(CardStatus.ACTIVE);
-            case LOCKED -> card.setStatus(CardStatus.LOCKED);
-            case EXPIRED -> card.setStatus(CardStatus.EXPIRED);
+            case "ACTIVATE" -> card.setStatus(CardStatus.ACTIVE);
+            case "LOCK" -> card.setStatus(CardStatus.LOCKED);
         }
 
         cardRepository.save(card);
 
         return new ResponseEntity<>(Map.of(
                 "status", "Card is " + status,
+                "card", cardTemplate + number), HttpStatus.OK);
+    }
+
+    @Transactional
+    public ResponseEntity<?>  deleteCard(String number) {
+        Card card = cardRepository.findByCardNumber(cardTemplate + number).get();
+
+        cardRepository.delete(card);
+
+        return new ResponseEntity<>(Map.of(
+                "status", "Card is deleted",
                 "card", cardTemplate + number), HttpStatus.OK);
     }
 

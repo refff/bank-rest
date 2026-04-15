@@ -56,6 +56,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/admin/allCards").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/admin/createCard").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/admin/cardStatusRequest").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/admin/deleteCard").hasAuthority("ROLE_ADMIN")
                         //.requestMatchers("/*").permitAll()
 
                 )

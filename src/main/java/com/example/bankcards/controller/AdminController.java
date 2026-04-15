@@ -67,6 +67,14 @@ public class AdminController {
         return adminService.processCardAction(request.number, request.action);
     }
 
+    @PostMapping(value = "/deleteCard")
+    @Operation(
+            description = "Удаление карт",
+            tags = "Card"
+    )
+    public ResponseEntity<?> cardDelete(@RequestBody CardRequest request) {
+        return adminService.deleteCard(request.number);
+    }
 
-    record CardRequest(String number, CardStatus action){}
+    record CardRequest(String number, String action){}
 }
