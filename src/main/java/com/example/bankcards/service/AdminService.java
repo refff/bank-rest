@@ -56,19 +56,20 @@ public class AdminService {
         return cardRepository.findAll();
     }
 
+    //todo save full card number to db and return masked
     @Transactional
     public ResponseEntity<?> createCard(CardDTO cardDTO) {
         User owner = userRepository.findByUsername(cardDTO.getOwner())
                 .orElseThrow(() -> new RuntimeException("No such user"));
 
-        String experationDate = LocalDate.now().plusYears(5).toString();
+        String expirationDate = LocalDate.now().plusYears(5).toString();
         String cardNumber = cardTemplate + (int)((Math.random()*9000) + 1000);
 
         Card card = new Card()
                 .setCardNumber(cardNumber)
                 .setOwner(owner)
                 .setStatus(CardStatus.ACTIVE)
-                .setExpirationDate(experationDate)
+                .setExpirationDate(expirationDate)
                 .setBalance(0.0);
 
         cardRepository.save(card);

@@ -1,9 +1,11 @@
 package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.CardDTO;
+import com.example.bankcards.dto.CardRequest;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +44,7 @@ public class AdminController {
 
     @GetMapping(value = "/allCards")
     @Operation(
-            description = "Просмотр всех карт (номер, срок действия, статус)",
+            description = "Просмотр всех карт (номер, срок действия, статус, баланс)",
             tags = "Admin"
     )
     public ResponseEntity<?> getAllCards(){
@@ -63,8 +65,8 @@ public class AdminController {
             description = "Выполнение действий с картами(активация, блокировка)",
             tags = "Card"
     )
-    public ResponseEntity<?> cardAction(@RequestBody CardRequest request) {
-        return adminService.processCardAction(request.number, request.action);
+    public ResponseEntity<?> cardAction(@RequestBody @Valid CardRequest request) {
+        return adminService.processCardAction(request.number(), request.action());
     }
 
     @PostMapping(value = "/deleteCard")
@@ -72,9 +74,8 @@ public class AdminController {
             description = "Удаление карт",
             tags = "Card"
     )
-    public ResponseEntity<?> cardDelete(@RequestBody CardRequest request) {
-        return adminService.deleteCard(request.number);
+    public ResponseEntity<?> cardDelete(@RequestBody @Valid CardRequest request) {
+        return adminService.deleteCard(request.number());
     }
 
-    record CardRequest(String number, String action){}
 }
