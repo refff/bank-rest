@@ -3,7 +3,7 @@ package com.example.bankcards.dto;
 import com.example.bankcards.entity.User;
 import jakarta.validation.constraints.NotEmpty;
 
-public class CardDTO {
+public class  CardDTO {
 
     @NotEmpty
     private String owner;

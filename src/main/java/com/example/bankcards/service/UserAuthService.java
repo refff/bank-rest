@@ -1,3 +1,4 @@
+/*
 package com.example.bankcards.service;
 
 import com.example.bankcards.entity.User;
@@ -29,7 +30,6 @@ public class UserAuthService {
     public User getByUsername(String username) {
         return repository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
-
     }
 
     public User getCurrentUser() {
@@ -37,3 +37,4 @@ public class UserAuthService {
         return getByUsername(username);
     }
 }
+*/

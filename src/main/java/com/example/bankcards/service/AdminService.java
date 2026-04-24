@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class AdminService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final CardRepository cardRepository;
-    private final String cardTemplate = "**** **** **** ";
+    public static final String cardTemplate = "**** **** **** ";
 
     @Autowired
     public AdminService(UserRepository userRepository,
@@ -70,7 +71,7 @@ public class AdminService {
                 .setOwner(owner)
                 .setStatus(CardStatus.ACTIVE)
                 .setExpirationDate(expirationDate)
-                .setBalance(0.0);
+                .setBalance(BigDecimal.valueOf(0.0));
 
         cardRepository.save(card);
 
