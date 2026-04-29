@@ -1,5 +1,6 @@
 package com.example.bankcards.service;
 
+import com.example.bankcards.controller.ClientController;
 import com.example.bankcards.dto.CardOperationDTO;
 import com.example.bankcards.dto.TransferDTO;
 import com.example.bankcards.entity.Card;
@@ -68,6 +69,13 @@ public class ClientService {
         validateCardOwner(card, user);
 
         return applyTransaction(card, cardOperationDTO);
+    }
+
+    @Transactional
+    public ResponseEntity<?> blockRequest(ClientController.CardNumberDTO numberDTO) {
+
+
+        return null;
     }
 
     private Transfer convertFromDTO(TransferDTO transfer) {
