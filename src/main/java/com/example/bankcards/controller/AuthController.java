@@ -2,14 +2,13 @@ package com.example.bankcards.controller;
 
 import com.example.bankcards.dto.UserDTO;
 import com.example.bankcards.service.AuthService;
+//import com.example.bankcards.service.UserAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -34,7 +33,7 @@ public class AuthController {
 
     @PostMapping(value = "/signup")
     @Operation(
-            description = "Регистрация пользователей",
+            summary = "Регистрация пользователей",
             tags = "Аутентификация",
             responses = {
                     @ApiResponse(responseCode = "200", description = "User successfully created"),
@@ -45,6 +44,9 @@ public class AuthController {
     }
 
     @GetMapping("/token")
+    @Operation(
+            summary = "Получение токена пользователя",
+            tags = "Аутентификация")
     public ResponseEntity<?> getAuthToken() {
         return authService.getToken();
     }

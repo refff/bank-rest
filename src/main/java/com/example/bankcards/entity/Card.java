@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.scheduling.config.TaskExecutionOutcome;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "cards")
 public class Card {
@@ -13,6 +15,7 @@ public class Card {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
+    //todo move card number to int amount
     @NotEmpty
     private String cardNumber;
 
@@ -24,6 +27,8 @@ public class Card {
     @JoinColumn(name = "user_id")
     @JsonBackReference
     private User owner;
+
+    private BigDecimal balance;
 
     public Card() {
     }
@@ -78,6 +83,15 @@ public class Card {
 
     public Card setOwner(User owner) {
         this.owner = owner;
+        return this;
+    }
+
+    public BigDecimal getBalance() {
+        return balance;
+    }
+
+    public Card setBalance(BigDecimal balance) {
+        this.balance = balance;
         return this;
     }
 }

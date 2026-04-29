@@ -38,7 +38,7 @@ public class JwtService {
         final Claims claims = extractAllClaims(token);
         return claimsResolvers.apply(claims);
     }
-
+    //todo return expiration time
     private String generateToken(Map<String, Object> extraClaims, User user) {
         return Jwts.builder().setClaims(extraClaims).setSubject(user.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))

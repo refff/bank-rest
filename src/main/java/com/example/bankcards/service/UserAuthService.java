@@ -1,3 +1,4 @@
+/*
 package com.example.bankcards.service;
 
 import com.example.bankcards.entity.User;
@@ -9,12 +10,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService {
+public class UserAuthService {
 
     private final UserRepository repository;
 
     @Autowired
-    public UserService(UserRepository repository) {
+    public UserAuthService(UserRepository repository) {
         this.repository = repository;
     }
 
@@ -29,7 +30,6 @@ public class UserService {
     public User getByUsername(String username) {
         return repository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден"));
-
     }
 
     public User getCurrentUser() {
@@ -37,3 +37,4 @@ public class UserService {
         return getByUsername(username);
     }
 }
+*/
