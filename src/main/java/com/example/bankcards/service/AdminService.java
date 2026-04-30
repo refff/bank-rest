@@ -2,9 +2,15 @@ package com.example.bankcards.service;
 
 import com.example.bankcards.dto.CardDTO;
 import com.example.bankcards.entity.*;
+import com.example.bankcards.entity.enums.BlockRequestStatus;
+import com.example.bankcards.entity.enums.CardStatus;
+import com.example.bankcards.entity.enums.Roles;
+import com.example.bankcards.repository.BlockRequestRepository;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.RoleRepository;
 import com.example.bankcards.repository.UserRepository;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,21 +25,14 @@ import java.util.Map;
 
 @Service
 @Transactional
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class AdminService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final CardRepository cardRepository;
     public static final String cardTemplate = "**** **** **** ";
-
-    @Autowired
-    public AdminService(UserRepository userRepository,
-                        RoleRepository roleRepository,
-                        CardRepository cardRepository) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.cardRepository = cardRepository;
-    }
+    public BlockRequestRepository requestRepository;
 
     @Transactional
     public ResponseEntity<?> getAdminAccess() {
@@ -105,6 +104,24 @@ public class AdminService {
         return new ResponseEntity<>(Map.of(
                 "status", "Card is deleted",
                 "card", cardTemplate + number), HttpStatus.OK);
+    }
+
+    @Transactional
+    public ResponseEntity<?> getAllRequests() {
+        return ResponseEntity.ok(requestRepository.findAll());
+    }
+
+    @Transactional
+    public ResponseEntity<?> blockAll() {
+        requestRepository.findAll().stream()
+                .forEach(request ->
+                {
+                    request.getCard().setStatus(CardStatus.LOCKED);
+                    request.setStatus(BlockRequestStatus.APPROVED);
+                });
+
+        return ResponseEntity.ok(Map.of(
+                "status", "all cards from the block queue have benn blocked"));
     }
 
 }

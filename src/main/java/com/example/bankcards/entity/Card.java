@@ -1,9 +1,9 @@
 package com.example.bankcards.entity;
 
+import com.example.bankcards.entity.enums.CardStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
-import org.springframework.scheduling.config.TaskExecutionOutcome;
 
 import java.math.BigDecimal;
 
@@ -29,6 +29,10 @@ public class Card {
     private User owner;
 
     private BigDecimal balance;
+
+    @OneToOne(mappedBy = "card")
+    @JsonBackReference
+    private BlockRequest blockRequest;
 
     public Card() {
     }
@@ -92,6 +96,15 @@ public class Card {
 
     public Card setBalance(BigDecimal balance) {
         this.balance = balance;
+        return this;
+    }
+
+    public BlockRequest getBlockRequest() {
+        return blockRequest;
+    }
+
+    public Card setBlockRequest(BlockRequest blockRequest) {
+        this.blockRequest = blockRequest;
         return this;
     }
 }
