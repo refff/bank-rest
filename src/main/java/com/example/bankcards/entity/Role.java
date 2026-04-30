@@ -1,8 +1,7 @@
 package com.example.bankcards.entity;
 
+import com.example.bankcards.entity.enums.Roles;
 import jakarta.persistence.*;
-import org.jspecify.annotations.Nullable;
-import org.springframework.security.core.GrantedAuthority;
 
 @Entity
 @Table(name = "roles")

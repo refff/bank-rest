@@ -1,14 +1,21 @@
 package com.example.bankcards.service;
 
+import com.example.bankcards.controller.ClientController;
 import com.example.bankcards.dto.CardOperationDTO;
 import com.example.bankcards.dto.TransferDTO;
+import com.example.bankcards.entity.BlockRequest;
 import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.Transfer;
 import com.example.bankcards.entity.User;
+import com.example.bankcards.entity.enums.BlockRequestStatus;
 import com.example.bankcards.exception.CardExceptions.NotEnoughMoneyException;
 import com.example.bankcards.exception.CardExceptions.NotOwnerException;
+import com.example.bankcards.repository.BlockRequestRepository;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -17,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -24,16 +32,12 @@ import java.util.Map;
 import static com.example.bankcards.service.AdminService.cardTemplate;
 
 @Service
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class ClientService {
 
     private final CardRepository cardRepository;
     private final UserRepository userRepository;
-
-    public ClientService(CardRepository cardRepository,
-                         UserRepository userRepository) {
-        this.cardRepository = cardRepository;
-        this.userRepository = userRepository;
-    }
+    private final BlockRequestRepository requestRepository;
 
     @Transactional
     public ResponseEntity<?> getClientCards(Pageable pageable) {
@@ -68,6 +72,29 @@ public class ClientService {
         validateCardOwner(card, user);
 
         return applyTransaction(card, cardOperationDTO);
+    }
+
+    @Transactional
+    public ResponseEntity<?> blockRequest(ClientController.CardNumberDTO numberDTO) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        Card card = cardRepository.findByCardNumber(cardTemplate + numberDTO.number()).orElseThrow();
+        User user = getUser(auth);
+
+        validateCardOwner(card, user);
+
+        BlockRequest request = BlockRequest.builder()
+                .card(card)
+                .status(BlockRequestStatus.WAITING)
+                .build();
+
+        requestRepository.save(request);
+
+        return new ResponseEntity<>(Map.of(
+                "status", "A request to block the card has been created",
+                "Card number", numberDTO.number()
+        ),
+                HttpStatus.OK);
     }
 
     private Transfer convertFromDTO(TransferDTO transfer) {
@@ -120,7 +147,7 @@ public class ClientService {
             case "WITHDRAW" -> withdraw(card, dto.amount());
             case "DEPOSIT" -> deposit(card, dto.amount());
             default ->
-                    throw new IllegalArgumentException("No such operation, or it is null");
+                    throw new IllegalArgumentException("No such operation");
         }
 
         cardRepository.save(card);
