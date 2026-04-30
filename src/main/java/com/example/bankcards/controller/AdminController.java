@@ -57,7 +57,7 @@ public class AdminController {
         return adminService.createCard(cardDTO);
     }
 
-    @PostMapping(value = "/cardStatusRequest")
+    @PutMapping(value = "/cardStatusRequest")
     @Operation(
             description = "Выполнение действий с картами(активация, блокировка)",
             tags = "Card"
@@ -66,7 +66,7 @@ public class AdminController {
         return adminService.processCardAction(request.number(), request.action());
     }
 
-    @PostMapping(value = "/deleteCard")
+    @DeleteMapping(value = "/deleteCard")
     @Operation(
             description = "Удаление карт",
             tags = "Card"
@@ -74,5 +74,16 @@ public class AdminController {
     public ResponseEntity<?> cardDelete(@RequestBody @Valid CardStatusRequest request) {
         return adminService.deleteCard(request.number());
     }
+
+    @GetMapping(value = "/allBlockRequests")
+    public ResponseEntity<?> getAllRequests() {
+        return adminService.getAllRequests();
+    }
+
+    @PutMapping(value = "/blockAllWaitedCards")
+    public ResponseEntity<?> blockAll() {
+        return adminService.blockAll();
+    }
+
 
 }

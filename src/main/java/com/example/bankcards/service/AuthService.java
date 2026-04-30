@@ -9,6 +9,8 @@ import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.exception.UserExistException;
 import com.example.bankcards.security.JwtService;
 import com.example.bankcards.security.UserDetailsImpl;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,23 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Map;
 
 @Component
+@AllArgsConstructor(onConstructor_ = @Autowired)
 public class AuthService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
-
-    @Autowired
-    public AuthService(UserRepository userRepository,
-                       PasswordEncoder passwordEncoder,
-                       RoleRepository roleRepository,
-                       JwtService jwtService) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.roleRepository = roleRepository;
-        this.jwtService = jwtService;
-    }
 
     @Transactional
     public ResponseEntity<?> signUp(UserDTO request){
@@ -47,7 +39,7 @@ public class AuthService {
                     throw new UserExistException();
                 });
 
-        Role grantedRole = roleRepository.findById(1).get();
+        Role grantedRole = roleRepository.findById(1).orElseThrow();
 
         User user = new User();
         user.setUsername(request.getUsername());

@@ -48,7 +48,7 @@ public class ClientController {
         return clientService.processTransaction(cardOperationDTO);
     }
 
-    @PostMapping(value = "/blockCard")
+    @PostMapping(value = "/blockCardRequest")
     public ResponseEntity<?> blockCardRequest(@RequestBody CardNumberDTO cardNumberDTO) {
         return clientService.blockRequest(cardNumberDTO);
     }
