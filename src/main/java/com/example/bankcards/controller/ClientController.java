@@ -1,5 +1,6 @@
 package com.example.bankcards.controller;
 
+import com.example.bankcards.dto.CardNumberDTO;
 import com.example.bankcards.dto.CardOperationDTO;
 import com.example.bankcards.dto.TransferDTO;
 import com.example.bankcards.service.ClientService;
@@ -50,8 +51,6 @@ public class ClientController {
 
     @PostMapping(value = "/blockCardRequest")
     public ResponseEntity<?> blockCardRequest(@RequestBody CardNumberDTO cardNumberDTO) {
-        return clientService.blockRequest(cardNumberDTO);
+        return clientService.blockRequest(cardNumberDTO.number());
     }
-
-    public record CardNumberDTO(String number) {}
 }

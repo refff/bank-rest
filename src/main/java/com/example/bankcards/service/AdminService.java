@@ -1,15 +1,17 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.dto.CardDTO;
+import com.example.bankcards.dto.CardOwnerDTO;
 import com.example.bankcards.entity.*;
 import com.example.bankcards.entity.enums.BlockRequestStatus;
 import com.example.bankcards.entity.enums.CardStatus;
 import com.example.bankcards.entity.enums.Roles;
+import com.example.bankcards.entity.response.BlockAllCardsResponseData;
+import com.example.bankcards.entity.response.CardOperationResponseData;
+import com.example.bankcards.exception.CardExceptions.NoSuchCardException;
 import com.example.bankcards.repository.BlockRequestRepository;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.RoleRepository;
 import com.example.bankcards.repository.UserRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,21 +27,22 @@ import java.util.Map;
 
 @Service
 @Transactional
-@AllArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
+
 public class AdminService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final CardRepository cardRepository;
-    public static final String cardTemplate = "**** **** **** ";
-    public BlockRequestRepository requestRepository;
+    private final BlockRequestRepository requestRepository;
+    public static final String CARD_TEMPLATE = "**** **** **** ";
 
     @Transactional
-    public ResponseEntity<?> getAdminAccess() {
+    public ResponseEntity<?> grantAdminRoleToCurrentUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        User user = userRepository.findByUsername(username).get();
-        Role admin = roleRepository.findById(7).get();
+        User user = userRepository.findByUsername(username).orElseThrow();
+        Role admin = roleRepository.findById(7).orElseThrow();
 
         user.setRoles(admin);
 
@@ -58,12 +61,14 @@ public class AdminService {
 
     //todo save full card number to db and return masked
     @Transactional
-    public ResponseEntity<?> createCard(CardDTO cardDTO) {
-        User owner = userRepository.findByUsername(cardDTO.getOwner())
+    public CardOperationResponseData createCard(CardOwnerDTO cardOwnerDTO) {
+        User owner = userRepository.findByUsername(cardOwnerDTO.getOwner())
                 .orElseThrow(() -> new RuntimeException("No such user"));
 
+
+        //todo move to separate class
         String expirationDate = LocalDate.now().plusYears(5).toString();
-        String cardNumber = cardTemplate + (int)((Math.random()*9000) + 1000);
+        String cardNumber = CARD_TEMPLATE + (int)((Math.random()*9000) + 1000);
 
         Card card = new Card()
                 .setCardNumber(cardNumber)
@@ -71,57 +76,58 @@ public class AdminService {
                 .setStatus(CardStatus.ACTIVE)
                 .setExpirationDate(expirationDate)
                 .setBalance(BigDecimal.valueOf(0.0));
+        //
 
         cardRepository.save(card);
 
-        return new ResponseEntity<>(Map.of(
-                "status", "Card created",
-                "number", cardNumber), HttpStatus.CREATED);
+        return new CardOperationResponseData(
+                CARD_TEMPLATE+cardNumber,
+                "Card created");
     }
 
     @Transactional
-    public ResponseEntity<?> processCardAction(String number, String status) {
-        Card card = cardRepository.findByCardNumber(cardTemplate + number).get();
+    public CardOperationResponseData updateCardStatus(String number, CardStatus status) {
+        Card card = cardRepository.findByCardNumber(CARD_TEMPLATE + number).orElseThrow();
 
         switch (status) {
-            case "ACTIVATE" -> card.setStatus(CardStatus.ACTIVE);
-            case "LOCK" -> card.setStatus(CardStatus.LOCKED);
+            case ACTIVE -> card.setStatus(CardStatus.ACTIVE);
+            case LOCKED -> card.setStatus(CardStatus.LOCKED);
         }
 
         cardRepository.save(card);
 
-        return new ResponseEntity<>(Map.of(
-                "status", "Card is " + status,
-                "card", cardTemplate + number), HttpStatus.OK);
+        return new CardOperationResponseData(
+                CARD_TEMPLATE+number,
+                "Card is " + status);
     }
 
     @Transactional
-    public ResponseEntity<?>  deleteCard(String number) {
-        Card card = cardRepository.findByCardNumber(cardTemplate + number).get();
+    public CardOperationResponseData deleteCard(String number) {
+        Card card = cardRepository.findByCardNumber(CARD_TEMPLATE + number)
+                .orElseThrow(() -> new NoSuchCardException(number));
 
         cardRepository.delete(card);
 
-        return new ResponseEntity<>(Map.of(
-                "status", "Card is deleted",
-                "card", cardTemplate + number), HttpStatus.OK);
+        return new CardOperationResponseData(
+                CARD_TEMPLATE + number,
+                "Card is deleted");
     }
 
     @Transactional
-    public ResponseEntity<?> getAllRequests() {
-        return ResponseEntity.ok(requestRepository.findAll());
+    public List<BlockRequest> getAllRequests() {
+        return requestRepository.findAll();
     }
 
     @Transactional
-    public ResponseEntity<?> blockAll() {
-        requestRepository.findAll().stream()
+    public BlockAllCardsResponseData blockAll() {
+        requestRepository.findAll()
                 .forEach(request ->
                 {
                     request.getCard().setStatus(CardStatus.LOCKED);
                     request.setStatus(BlockRequestStatus.APPROVED);
                 });
 
-        return ResponseEntity.ok(Map.of(
-                "status", "all cards from the block queue have benn blocked"));
+        return new BlockAllCardsResponseData("All cards from the block queue have been blocked");
     }
 
 }

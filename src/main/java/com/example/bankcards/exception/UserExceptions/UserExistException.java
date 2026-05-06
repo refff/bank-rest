@@ -1,4 +1,4 @@
-package com.example.bankcards.exception;
+package com.example.bankcards.exception.UserExceptions;
 
 public class UserExistException extends RuntimeException {
     public UserExistException() {

@@ -1,6 +1,5 @@
 package com.example.bankcards.service;
 
-import com.example.bankcards.controller.ClientController;
 import com.example.bankcards.dto.CardOperationDTO;
 import com.example.bankcards.dto.TransferDTO;
 import com.example.bankcards.entity.BlockRequest;
@@ -13,7 +12,6 @@ import com.example.bankcards.exception.CardExceptions.NotOwnerException;
 import com.example.bankcards.repository.BlockRequestRepository;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -24,15 +22,14 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.math.BigDecimal;
 import java.util.Map;
 
-import static com.example.bankcards.service.AdminService.cardTemplate;
+import static com.example.bankcards.service.AdminService.CARD_TEMPLATE;
 
 @Service
-@AllArgsConstructor(onConstructor_ = @Autowired)
+@RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ClientService {
 
     private final CardRepository cardRepository;
@@ -75,10 +72,10 @@ public class ClientService {
     }
 
     @Transactional
-    public ResponseEntity<?> blockRequest(ClientController.CardNumberDTO numberDTO) {
+    public ResponseEntity<?> blockRequest(String cardNumber) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        Card card = cardRepository.findByCardNumber(cardTemplate + numberDTO.number()).orElseThrow();
+        Card card = cardRepository.findByCardNumber(CARD_TEMPLATE + cardNumber).orElseThrow();
         User user = getUser(auth);
 
         validateCardOwner(card, user);
@@ -92,7 +89,7 @@ public class ClientService {
 
         return new ResponseEntity<>(Map.of(
                 "status", "A request to block the card has been created",
-                "Card number", numberDTO.number()
+                "Card number", cardNumber
         ),
                 HttpStatus.OK);
     }
@@ -111,7 +108,7 @@ public class ClientService {
     }
 
     private Card getCard(String number) {
-        return cardRepository.findByCardNumber(cardTemplate + number)
+        return cardRepository.findByCardNumber(CARD_TEMPLATE + number)
                 .orElseThrow(() -> new IllegalArgumentException("Card not found"));
     }
 
@@ -144,8 +141,8 @@ public class ClientService {
     private ResponseEntity<?> applyTransaction(Card card, CardOperationDTO dto) {
 
         switch (dto.operation()) {
-            case "WITHDRAW" -> withdraw(card, dto.amount());
-            case "DEPOSIT" -> deposit(card, dto.amount());
+            case WITHDRAW -> withdraw(card, dto.amount());
+            case DEPOSIT -> deposit(card, dto.amount());
             default ->
                     throw new IllegalArgumentException("No such operation");
         }
