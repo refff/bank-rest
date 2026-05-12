@@ -1,7 +1,7 @@
 package com.example.bankcards.exception;
 
 import com.example.bankcards.entity.response.ApiResponse;
-import com.example.bankcards.entity.response.CardOperationResponseData;
+import com.example.bankcards.entity.response.ErrorResponseData;
 import com.example.bankcards.exception.CardExceptions.CardIsExpiredException;
 import com.example.bankcards.exception.CardExceptions.CardIsLockedException;
 import com.example.bankcards.exception.CardExceptions.NoSuchCardException;
@@ -13,87 +13,72 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.context.request.WebRequest;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+
 
 @RestControllerAdvice
 public class ControllerExceptionHandler {
 
-    //todo rewrite all exceptions to apiResponse
     @ExceptionHandler(UserExistException.class)
     public ResponseEntity<Object> userExistExc() {
-        List<String> response = List.of("error", "User already exist");
 
-        return new ResponseEntity<>(
-                mapBuilder(response),
-                HttpStatus.CONFLICT);
+        var data = new ErrorResponseData(
+                "User already exist");
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(new ApiResponse<>(false, data));
     }
 
     @ExceptionHandler(NotOwnerException.class)
-    public ResponseEntity<Object> notOwnerExc() {
-        List<String> response = List.of(
-                "error", "User not owner one of cards");
+    public ResponseEntity<ApiResponse> notOwnerExc() {
 
-        return new ResponseEntity<>(
-                mapBuilder(response),
-                HttpStatus.BAD_REQUEST);
+        var data = new ErrorResponseData("User not owner one of cards");
+
+        return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, data));
     }
 
     @ExceptionHandler(NoSuchCardException.class)
-    public ResponseEntity<ApiResponse> noSuchCard(Exception ex, HttpServletRequest request) {
-        String cardNumber = ex.getMessage();
+    public ResponseEntity<ApiResponse> noSuchCard() {
 
-        var data = new CardOperationResponseData(
-                cardNumber, "Such card doesn't exist or have been deleted earlier");
+        var data = new ErrorResponseData(
+                "Such card doesn't exist or have been deleted earlier");
 
         return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, data));
     }
 
     @ExceptionHandler(CardIsLockedException.class)
-    public ResponseEntity<ApiResponse> cardIsLocked(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse> cardIsLocked(Exception ex) {
         String cardNumber = ex.getMessage();
 
-        var data = new CardOperationResponseData(
-                cardNumber, "Card has been locked, ask admin to unlock it");
+        var data = new ErrorResponseData(
+                "Card " + cardNumber + " is locked!");
 
         return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, data));
     }
 
     @ExceptionHandler(CardIsExpiredException.class)
-    public ResponseEntity<ApiResponse> cardIsExpired(Exception ex, HttpServletRequest request) {
+    public ResponseEntity<ApiResponse> cardIsExpired(Exception ex) {
         String cardNumber = ex.getMessage();
 
-        var data = new CardOperationResponseData(
-                cardNumber, "Card has expired!");
+        var data = new ErrorResponseData(
+                "Card has expired!");
 
         return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, data));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse> validException(Exception ex) {
-        String cardNumber = ex.getMessage();
+    public ResponseEntity<ApiResponse> validException(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult()
+                .getFieldErrors().get(0).getDefaultMessage();
 
-        //todo
-        var data = new CardOperationResponseData(
-                cardNumber, "failed");
+        var data = new ErrorResponseData(message);
 
         return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, data));
-    }
-
-    private Map<String, String> mapBuilder(List<String> list) {
-        Map<String, String> result = new HashMap<>();
-
-        for (int i = 0; i < list.size() - 1; i = i + 2) {
-            result.put(list.get(i), list.get(i+1));
-        }
-
-        return result;
     }
 }

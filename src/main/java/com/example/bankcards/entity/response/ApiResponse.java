@@ -10,13 +10,11 @@ import java.time.Instant;
 public class ApiResponse<T> {
 
     private boolean success;
-    //private String message;
     private Instant timestamp;
     private T data;
 
     public ApiResponse(boolean success, T data) {
         this.success = success;
-        //this.message = message;
         this.timestamp = Instant.now();
         this.data = data;
     }

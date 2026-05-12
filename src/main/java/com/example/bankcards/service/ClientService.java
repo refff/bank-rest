@@ -125,12 +125,6 @@ public class ClientService {
         return new CardOperationResponseData(
                 cardNumber,
                 "A request to block the card has been created");
-
-        /*return new ResponseEntity<>(Map.of(
-                "status", "A request to block the card has been created",
-                "card number", cardNumber
-        ),
-                HttpStatus.OK);*/
     }
 
     private Transfer convertFromDTO(TransferDTO transfer) {
@@ -182,10 +176,5 @@ public class ClientService {
         return new TransferResponseData(
                 "Transfer completed!",
                 transfer.getValue());
-
-        /*return new ResponseEntity<>(Map.of(
-                "status", "Transfer completed!"
-        ), HttpStatus.OK);*/
     }
-
 }
