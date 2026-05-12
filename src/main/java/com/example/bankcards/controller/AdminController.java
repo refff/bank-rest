@@ -24,7 +24,7 @@ public class AdminController {
 
     private final AdminService adminService;
 
-    @GetMapping(value = "/getAdmin")
+    @PutMapping(value = "/getAdmin")
     @Operation(
             description = "Получение статуса админа",
             tags = "Админ"
@@ -100,6 +100,4 @@ public class AdminController {
         return ResponseEntity.ok()
                 .body(new ApiResponse<>(true, data));
     }
-
-
 }

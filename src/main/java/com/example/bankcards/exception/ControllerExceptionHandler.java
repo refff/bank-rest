@@ -2,12 +2,15 @@ package com.example.bankcards.exception;
 
 import com.example.bankcards.entity.response.ApiResponse;
 import com.example.bankcards.entity.response.CardOperationResponseData;
+import com.example.bankcards.exception.CardExceptions.CardIsExpiredException;
+import com.example.bankcards.exception.CardExceptions.CardIsLockedException;
 import com.example.bankcards.exception.CardExceptions.NoSuchCardException;
 import com.example.bankcards.exception.CardExceptions.NotOwnerException;
 import com.example.bankcards.exception.UserExceptions.UserExistException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
@@ -45,6 +48,40 @@ public class ControllerExceptionHandler {
 
         var data = new CardOperationResponseData(
                 cardNumber, "Such card doesn't exist or have been deleted earlier");
+
+        return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, data));
+    }
+
+    @ExceptionHandler(CardIsLockedException.class)
+    public ResponseEntity<ApiResponse> cardIsLocked(Exception ex, HttpServletRequest request) {
+        String cardNumber = ex.getMessage();
+
+        var data = new CardOperationResponseData(
+                cardNumber, "Card has been locked, ask admin to unlock it");
+
+        return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, data));
+    }
+
+    @ExceptionHandler(CardIsExpiredException.class)
+    public ResponseEntity<ApiResponse> cardIsExpired(Exception ex, HttpServletRequest request) {
+        String cardNumber = ex.getMessage();
+
+        var data = new CardOperationResponseData(
+                cardNumber, "Card has expired!");
+
+        return ResponseEntity.badRequest()
+                .body(new ApiResponse(false, data));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse> validException(Exception ex) {
+        String cardNumber = ex.getMessage();
+
+        //todo
+        var data = new CardOperationResponseData(
+                cardNumber, "failed");
 
         return ResponseEntity.badRequest()
                 .body(new ApiResponse(false, data));

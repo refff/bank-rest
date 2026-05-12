@@ -7,8 +7,12 @@ import com.example.bankcards.entity.Card;
 import com.example.bankcards.entity.Transfer;
 import com.example.bankcards.entity.User;
 import com.example.bankcards.entity.enums.BlockRequestStatus;
-import com.example.bankcards.exception.CardExceptions.NotEnoughMoneyException;
-import com.example.bankcards.exception.CardExceptions.NotOwnerException;
+import com.example.bankcards.entity.enums.CardStatus;
+import com.example.bankcards.entity.response.ATMResponseData;
+import com.example.bankcards.entity.response.CardOperationResponseData;
+import com.example.bankcards.entity.response.TransferResponseData;
+import com.example.bankcards.exception.CardExceptions.*;
+import com.example.bankcards.exception.UserExceptions.UserExistException;
 import com.example.bankcards.repository.BlockRequestRepository;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
@@ -20,12 +24,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Map;
 
+
+//todo remove this
 import static com.example.bankcards.service.AdminService.CARD_TEMPLATE;
 
 @Service
@@ -36,9 +43,10 @@ public class ClientService {
     private final UserRepository userRepository;
     private final BlockRequestRepository requestRepository;
 
+
     @Transactional
-    public ResponseEntity<?> getClientCards(Pageable pageable) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+    public ResponseEntity<?> getClientCards(Pageable pageable, Authentication auth) {
+        String username = auth.getName();
 
         Page<Card> cardList = cardRepository.findAllByUsername(username, pageable);
 
@@ -46,8 +54,7 @@ public class ClientService {
     }
 
     @Transactional
-    public ResponseEntity<?> processTransfer(TransferDTO transferDTO) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    public TransferResponseData processTransfer(TransferDTO transferDTO, Authentication auth) {
 
         User user = getUser(auth);
         Transfer transfer = convertFromDTO(transferDTO);
@@ -55,27 +62,55 @@ public class ClientService {
         validateCardOwner(transfer.getFromCard(), user);
         validateCardOwner(transfer.getToCard(), user);
         validateEnoughMoney(transfer.getFromCard(), transfer.getValue());
+        validateCardStatus(transfer.getFromCard());
+        validateCardStatus(transfer.getToCard());
 
         return transferMoney(transfer);
     }
 
     @Transactional
-    public ResponseEntity<?> processTransaction(CardOperationDTO cardOperationDTO) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    public ATMResponseData withdraw(CardOperationDTO cardOperationDTO, Authentication auth) {
 
         Card card = getCard(cardOperationDTO.number());
         User user = getUser(auth);
 
         validateCardOwner(card, user);
+        validateCardStatus(card);
+        validateEnoughMoney(card, cardOperationDTO.amount());
 
-        return applyTransaction(card, cardOperationDTO);
+        card.setBalance(card.getBalance().subtract(cardOperationDTO.amount()));
+        cardRepository.save(card);
+
+        return new ATMResponseData(
+                card.getCardNumber(),
+                "WITHDRAW is completed!",
+                cardOperationDTO.amount()
+        );
     }
 
     @Transactional
-    public ResponseEntity<?> blockRequest(String cardNumber) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    public ATMResponseData deposit(CardOperationDTO cardOperationDTO, Authentication auth) {
 
-        Card card = cardRepository.findByCardNumber(CARD_TEMPLATE + cardNumber).orElseThrow();
+        Card card = getCard(cardOperationDTO.number());
+        User user = getUser(auth);
+
+        validateCardOwner(card, user);
+        validateCardStatus(card);
+
+        card.setBalance(card.getBalance().add(cardOperationDTO.amount()));
+        cardRepository.save(card);
+
+        return new ATMResponseData(
+                card.getCardNumber(),
+                "DEPOSIT is completed!",
+                cardOperationDTO.amount()
+        );
+    }
+
+    @Transactional
+    public CardOperationResponseData blockCardRequest(String cardNumber, Authentication auth) {
+
+        Card card = getCard(cardNumber);
         User user = getUser(auth);
 
         validateCardOwner(card, user);
@@ -87,11 +122,15 @@ public class ClientService {
 
         requestRepository.save(request);
 
-        return new ResponseEntity<>(Map.of(
+        return new CardOperationResponseData(
+                cardNumber,
+                "A request to block the card has been created");
+
+        /*return new ResponseEntity<>(Map.of(
                 "status", "A request to block the card has been created",
-                "Card number", cardNumber
+                "card number", cardNumber
         ),
-                HttpStatus.OK);
+                HttpStatus.OK);*/
     }
 
     private Transfer convertFromDTO(TransferDTO transfer) {
@@ -104,12 +143,12 @@ public class ClientService {
 
     private User getUser(Authentication auth) {
         return userRepository.findByUsername(auth.getName())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 
     private Card getCard(String number) {
         return cardRepository.findByCardNumber(CARD_TEMPLATE + number)
-                .orElseThrow(() -> new IllegalArgumentException("Card not found"));
+                .orElseThrow(() -> new NoSuchCardException("Card not found"));
     }
 
     private void validateCardOwner(Card card, User user) {
@@ -123,7 +162,14 @@ public class ClientService {
             throw new NotEnoughMoneyException();
     }
 
-    private ResponseEntity<?> transferMoney(Transfer transfer) {
+    private void validateCardStatus(Card card) {
+        if (card.getStatus() == CardStatus.LOCKED)
+            throw new CardIsLockedException(card.getCardNumber());
+        else if (card.getStatus() == CardStatus.EXPIRED)
+            throw new CardIsExpiredException(card.getCardNumber());
+    }
+
+    private TransferResponseData transferMoney(Transfer transfer) {
         Card from = transfer.getFromCard();
         Card to = transfer.getToCard();
 
@@ -133,35 +179,13 @@ public class ClientService {
         cardRepository.save(from);
         cardRepository.save(to);
 
-        return new ResponseEntity<>(Map.of(
+        return new TransferResponseData(
+                "Transfer completed!",
+                transfer.getValue());
+
+        /*return new ResponseEntity<>(Map.of(
                 "status", "Transfer completed!"
-        ), HttpStatus.OK);
+        ), HttpStatus.OK);*/
     }
 
-    private ResponseEntity<?> applyTransaction(Card card, CardOperationDTO dto) {
-
-        switch (dto.operation()) {
-            case WITHDRAW -> withdraw(card, dto.amount());
-            case DEPOSIT -> deposit(card, dto.amount());
-            default ->
-                    throw new IllegalArgumentException("No such operation");
-        }
-
-        cardRepository.save(card);
-
-        return new ResponseEntity<>(Map.of(
-                "operation", dto.operation(),
-                "status", "completed"),
-                HttpStatus.OK);
-    }
-
-    private void withdraw(Card card, BigDecimal amount) {
-        validateEnoughMoney(card, amount);
-
-        card.setBalance(card.getBalance().subtract(amount));
-    }
-
-    private void deposit(Card card, BigDecimal amount) {
-        card.setBalance(card.getBalance().add(amount));
-    }
 }
