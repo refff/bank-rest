@@ -2,9 +2,11 @@ package com.example.bankcards.entity;
 
 import com.example.bankcards.entity.enums.Roles;
 import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name = "roles")
+@Data
 public class Role {
 
     @Id
@@ -22,21 +24,4 @@ public class Role {
         this.name = Roles.valueOf(name);
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public Role setId(long id) {
-        this.id = id;
-        return this;
-    }
-
-    public String getName() {
-        return name.getRoleName();
-    }
-
-    public Role setName(String name) {
-        this.name = Roles.valueOf(name);
-        return this;
-    }
 }

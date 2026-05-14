@@ -3,6 +3,11 @@ package com.example.bankcards.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.HashSet;
@@ -11,6 +16,10 @@ import java.util.Set;
 
 @Entity
 @Table(name = "users")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -18,6 +27,7 @@ public class User {
     private int id;
 
     @NotEmpty
+    @Column(unique = true)
     private String username;
 
     @OneToMany
@@ -36,57 +46,4 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
-
-    public User() {
-    }
-
-    public User(String username, List<Card> cardList, String password) {
-        this.username = username;
-        this.cardList = cardList;
-        this.password = password;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public User setId(int id) {
-        this.id = id;
-        return this;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public User setUsername(String username) {
-        this.username = username;
-        return this;
-    }
-
-    public List<Card> getCardList() {
-        return cardList;
-    }
-
-    public User setCardList(List<Card> cardList) {
-        this.cardList = cardList;
-        return this;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public User setPassword(String password) {
-        this.password = password;
-        return this;
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
-    }
-
-    public void setRoles(Role role) {
-        this.roles.add(role);
-    }
 }

@@ -44,7 +44,7 @@ public class AdminService {
         User user = userRepository.findByUsername(username).orElseThrow();
         Role admin = roleRepository.findById(7).orElseThrow();
 
-        user.setRoles(admin);
+        user.setRoles(Set.of(admin));
 
         userRepository.save(user);
 
@@ -86,8 +86,8 @@ public class AdminService {
     }
 
     @Transactional
-    public CardOperationResponseData updateCardStatus(String number, CardStatus status) {
-        Card card = cardRepository.findByCardNumber(CARD_TEMPLATE + number).orElseThrow();
+    public CardOperationResponseData updateCardStatus(String cardNumber, CardStatus status) {
+        Card card = cardRepository.findByCardNumber(CARD_TEMPLATE + cardNumber).orElseThrow();
 
         switch (status) {
             case ACTIVE -> card.setStatus(CardStatus.ACTIVE);
@@ -102,9 +102,9 @@ public class AdminService {
     }
 
     @Transactional
-    public CardOperationResponseData deleteCard(String number) {
-        Card card = cardRepository.findByCardNumber(CARD_TEMPLATE + number)
-                .orElseThrow(() -> new NoSuchCardException(number));
+    public CardOperationResponseData deleteCard(String cardNumber) {
+        Card card = cardRepository.findByCardNumber(CARD_TEMPLATE + cardNumber)
+                .orElseThrow(() -> new NoSuchCardException(cardNumber));
 
         cardRepository.delete(card);
 
