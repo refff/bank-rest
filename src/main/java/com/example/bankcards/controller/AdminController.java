@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping(value = "/admin")
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Slf4j
 public class AdminController {
 
     private final AdminService adminService;
@@ -30,7 +29,10 @@ public class AdminController {
             tags = "Админ"
     )
     public ResponseEntity<?> becomeAdmin() {
-        return adminService.grantAdminRoleToCurrentUser();
+        var data = adminService.grantAdminRoleToCurrentUser();
+
+        return ResponseEntity.status(201)
+                .body(new ApiResponse<>(true, data));
     }
 
     @GetMapping(value = "/helloAdmin")

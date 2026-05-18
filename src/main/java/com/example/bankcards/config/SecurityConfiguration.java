@@ -48,7 +48,9 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/swagger-ui/**", "/swagger-resources/*", "/v3/api-docs/**", "/swagger").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/hello").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
+                                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
+                                .anyRequest().authenticated()
+                        /*.requestMatchers(HttpMethod.POST, "/auth/signup").permitAll()
                         .requestMatchers(HttpMethod.GET, "/auth/hellos").hasAuthority("ROLE_USER")
                         .requestMatchers(HttpMethod.GET, "/auth/token").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/admin/getAdmin").hasAuthority("ROLE_USER")
@@ -63,11 +65,11 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.PUT, "/client/processTransfer").hasAuthority("ROLE_USER")
                         .requestMatchers(HttpMethod.PUT, "/client/deposit").hasAuthority("ROLE_USER")
                         .requestMatchers(HttpMethod.PUT, "/client/withdraw").hasAuthority("ROLE_USER")
-                        .requestMatchers(HttpMethod.PUT, "/client/blockCardRequest").hasAuthority("ROLE_USER")
+                        .requestMatchers(HttpMethod.PUT, "/client/blockCardRequest").hasAuthority("ROLE_USER")*/
                         //.requestMatchers("/*").permitAll()
 
                 )
-                .authenticationProvider(authenticationProvider())
+                .authenticationProvider(authenticationProvider(userDetailService))
                 .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sessions ->
@@ -81,9 +83,10 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailService);
+    public AuthenticationProvider authenticationProvider(UserDetailService userDetailService) {
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(passwordEncoder());
         authProvider.setPasswordEncoder(passwordEncoder());
+        authProvider.setUserDetailsService(userDetailService);
         return authProvider;
     }
 
